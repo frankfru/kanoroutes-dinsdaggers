@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f4">
+    <title>Kajakroutes Dinsdaggers</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    >
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, "Segoe UI", sans-serif;
+        color: #17251f;
+        background: #f5f7f4;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --muted: #6d7b73;
+        --line: #e4e9e4;
+        --green: #187653;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .app {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        height: 100vh;
+        min-height: 520px;
+      }
+
+      .topbar {
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        min-height: 76px;
+        padding: 14px 24px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-logo {
+        display: block;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
+        object-fit: contain;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .subtitle a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .subtitle a:hover {
+        color: var(--green);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .subtitle a:focus-visible {
+        border-radius: 2px;
+        outline: 2px solid var(--green);
+        outline-offset: 3px;
+      }
+
+      .topbar-note {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #4a6558;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #42a675;
+        border-radius: 50%;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 350px minmax(0, 1fr);
+        min-height: 0;
+      }
+
+      .sidebar {
+        z-index: 400;
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        background: #fff;
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar-heading {
+        padding: 22px 20px 17px;
+      }
+
+      .eyebrow {
+        margin: 0 0 7px;
+        color: var(--green);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 19px;
+        letter-spacing: -0.03em;
+      }
+
+      .route-count {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .region-switch {
+        display: flex;
+        gap: 4px;
+        margin-top: 15px;
+        padding: 4px;
+        background: #f2f5f2;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+
+      .region-button {
+        min-width: 0;
+        flex: 1;
+        padding: 8px 7px;
+        color: #64736a;
+        background: transparent;
+        border: 0;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      .region-button:hover {
+        color: var(--green);
+      }
+
+      .region-button[aria-pressed="true"] {
+        color: #15583f;
+        background: #fff;
+        box-shadow: 0 1px 3px #1a332014;
+      }
+
+      .source-note {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.5;
+      }
+
+      .source-note a {
+        color: var(--green);
+      }
+
+      .search-wrap {
+        position: relative;
+        margin: 0 16px 12px;
+      }
+
+      .search-wrap svg {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        width: 16px;
+        height: 16px;
+        color: #809087;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      #search {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px 0 38px;
+        color: #24352c;
+        background: #f7f9f7;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        outline: none;
+      }
+
+      #search:focus {
+        border-color: #7ab59b;
+        box-shadow: 0 0 0 3px #18765314;
+      }
+
+      .list-actions {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 18px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .text-button {
+        padding: 4px 0;
+        color: var(--green);
+        background: none;
+        border: 0;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .text-button:hover {
+        color: #0e573b;
+      }
+
+      #route-list {
+        min-height: 0;
+        flex: 1;
+        overflow: auto;
+        padding: 8px 10px 18px;
+        scrollbar-color: #cbd6ce transparent;
+        scrollbar-width: thin;
+      }
+
+      .group-title {
+        margin: 12px 8px 5px;
+        color: #849087;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .route-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 39px;
+        padding: 5px 8px;
+        border-radius: 8px;
+      }
+
+      .route-row:hover {
+        background: #f6f8f6;
+      }
+
+      .route-row.selected {
+        background: #edf6f1;
+        box-shadow: inset 3px 0 var(--green);
+      }
+
+      .route-toggle {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+        margin: 0;
+        accent-color: var(--green);
+        cursor: pointer;
+      }
+
+      .route-color {
+        width: 17px;
+        height: 5px;
+        flex: 0 0 auto;
+        border-radius: 99px;
+      }
+
+      .route-name {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        padding: 5px 0;
+        color: #2e4036;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        font-size: 12px;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .route-name:hover {
+        color: var(--green);
+      }
+
+      .route-row.selected .route-name {
+        color: #15583f;
+        font-weight: 700;
+      }
+
+      .empty-state {
+        padding: 20px 10px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .map-wrap {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        background: #e8eee8;
+      }
+
+      .fullscreen-button {
+        position: absolute;
+        z-index: 1100;
+        top: 16px;
+        right: 16px;
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        color: #30453a;
+        background: #fff;
+        border: 1px solid #dfe6df;
+        border-radius: 9px;
+        box-shadow: 0 1px 5px #1a332033;
+        cursor: pointer;
+      }
+
+      .fullscreen-button:hover {
+        color: var(--green);
+        background: #f7faf7;
+      }
+
+      .fullscreen-button svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+      }
+
+      .map-wrap.is-fullscreen {
+        position: fixed;
+        z-index: 2000;
+        inset: 0;
+      }
+
+      .map-wrap:fullscreen {
+        width: 100%;
+        height: 100%;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      .sheet-toggle {
+        display: none;
+      }
+
+      .sidebar-content {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+      }
+
+      .map-label {
+        position: absolute;
+        z-index: 400;
+        right: 16px;
+        bottom: 20px;
+        padding: 8px 11px;
+        color: #30453a;
+        background: #ffffffed;
+        border: 1px solid #e1e7e1;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px #1a332011;
+        font-size: 11px;
+        pointer-events: none;
+      }
+
+      .map-legend {
+        position: absolute;
+        z-index: 400;
+        bottom: 20px;
+        left: 16px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        color: #30453a;
+        background: #ffffffed;
+        border: 1px solid #e1e7e1;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px #1a332011;
+        font-size: 11px;
+        pointer-events: none;
+      }
+
+      .startpoint-symbol {
+        width: 12px;
+        height: 12px;
+        background: #168a63;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 0 1px #168a63;
+      }
+
+      .startpoint-symbol.is-hidden {
+        visibility: hidden;
+      }
+
+      .map-error {
+        position: absolute;
+        z-index: 1000;
+        top: 16px;
+        left: 50%;
+        max-width: calc(100% - 32px);
+        padding: 10px 14px;
+        color: #7b2d26;
+        background: #fff4f1;
+        border: 1px solid #f1c8c0;
+        border-radius: 9px;
+        box-shadow: 0 3px 12px #23140f1a;
+        font-size: 13px;
+        transform: translateX(-50%);
+      }
+
+      .leaflet-popup-content-wrapper {
+        border-radius: 10px;
+      }
+
+      .popup-title {
+        margin: 0 0 4px;
+        color: #20352a;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .popup-detail {
+        margin: 0;
+        color: #728078;
+        font-size: 11px;
+      }
+
+      @media (max-width: 720px) {
+        .app {
+          grid-template-rows: auto minmax(0, 1fr);
+          height: 100dvh;
+          min-height: 0;
+        }
+
+        .topbar {
+          min-height: 66px;
+          padding: 10px 14px;
+        }
+
+        .brand-logo {
+          width: 42px;
+          height: 42px;
+        }
+
+        h1 {
+          font-size: 15px;
+        }
+
+        .topbar-note {
+          font-size: 0;
+        }
+
+        .content {
+          position: relative;
+          display: block;
+        }
+
+        .map-wrap {
+          position: absolute;
+          inset: 0;
+        }
+
+        .sidebar {
+          position: absolute;
+          z-index: 1200;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          height: min(78dvh, 680px);
+          min-height: 0;
+          overflow: hidden;
+          border: 1px solid var(--line);
+          border-bottom: 0;
+          border-radius: 18px 18px 0 0;
+          box-shadow: 0 -4px 24px #17251f1c;
+          transform: translateY(calc(100% - 68px));
+          transition: transform 220ms ease;
+          will-change: transform;
+        }
+
+        .sidebar.is-expanded {
+          transform: translateY(0);
+        }
+
+        .sheet-toggle {
+          display: flex;
+          min-height: 68px;
+          flex: 0 0 68px;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 8px 16px 10px;
+          color: #30453a;
+          background: #fff;
+          border: 0;
+          cursor: grab;
+          touch-action: none;
+        }
+
+        .sheet-toggle:active {
+          cursor: grabbing;
+        }
+
+        .sheet-toggle-content {
+          display: grid;
+          justify-items: center;
+          gap: 5px;
+          font-size: 12px;
+          font-weight: 650;
+        }
+
+        .sheet-grip {
+          width: 38px;
+          height: 4px;
+          background: #c8d2cb;
+          border-radius: 99px;
+        }
+
+        .sidebar-content {
+          min-height: 0;
+          overflow: auto;
+          overscroll-behavior: contain;
+          visibility: hidden;
+        }
+
+        .sidebar.is-expanded .sidebar-content {
+          visibility: visible;
+        }
+
+        .sidebar-heading {
+          flex: 0 0 auto;
+          padding: 12px 16px 10px;
+        }
+
+        .sidebar-heading h2 {
+          font-size: 16px;
+        }
+
+        .search-wrap {
+          flex: 0 0 auto;
+          margin: 0 14px 10px;
+        }
+
+        .list-actions {
+          flex: 0 0 auto;
+        }
+
+        #route-list {
+          overflow: visible;
+          min-height: auto;
+          flex: 0 0 auto;
+        }
+
+        .fullscreen-button {
+          top: 12px;
+          right: 12px;
+        }
+
+        .map-label {
+          right: 10px;
+          bottom: 12px;
+        }
+
+        .map-legend {
+          bottom: 12px;
+          left: 10px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sidebar {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="https://www.akvodysseus.nl/wp-content/uploads/2021/05/cropped-WhatsApp-Image-2021-05-12-at-10.14.57.jpeg"
+            alt="Logo AKV Odysseus"
+            width="48"
+            height="48"
+          >
+          <div>
+            <h1>Kajakroutes Dinsdaggers</h1>
+            <p class="subtitle"><a href="https://www.akvodysseus.nl/disciplines/toerkano/routes-kanotochten/">Van een rondje om de hoek tot een tocht door weidse polders</a></p>
+          </div>
+        </div>
+        <div class="topbar-note"><span class="status-dot"></span>Interactieve routekaart</div>
+      </header>
+
+      <div class="content">
+        <aside class="sidebar" aria-label="Routes">
+          <button class="sheet-toggle" id="sheet-toggle" type="button" aria-expanded="false" aria-controls="sidebar-content" aria-label="Routes openen">
+            <span class="sheet-toggle-content"><span class="sheet-grip" aria-hidden="true"></span><span id="sheet-toggle-label">Routes bekijken</span></span>
+          </button>
+          <div class="sidebar-content" id="sidebar-content">
+            <div class="sidebar-heading">
+              <h2>GPX-routes</h2>
+              <p class="route-count" id="route-count">Routes laden…</p>
+              <div class="region-switch" role="group" aria-label="Kies een routegebied">
+                <button class="region-button" type="button" data-region="noord" aria-pressed="false">Noord-Nederland</button>
+                <button class="region-button" type="button" data-region="noord-holland" aria-pressed="true">Noord-Holland e.o.</button>
+                <button class="region-button" type="button" data-region="utrecht" aria-pressed="false">Utrecht &amp; 't Gooi</button>
+                <button class="region-button" type="button" data-region="kanoroutes" aria-pressed="false">Nederland</button>
+              </div>
+              <p class="source-note" id="source-note"></p>
+            </div>
+            <label class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/>
+                <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <input id="search" type="search" placeholder="Zoek een route…" autocomplete="off" aria-label="Zoek een route">
+            </label>
+            <div class="list-actions">
+              <button class="text-button" id="show-all" type="button">Alles tonen</button>
+              <button class="text-button" id="hide-all" type="button">Alles verbergen</button>
+            </div>
+            <div id="route-list" aria-live="polite"></div>
+          </div>
+        </aside>
+
+        <section class="map-wrap" aria-label="Kaart met GPX-routes">
+          <div id="map"></div>
+          <div class="map-legend"><span class="startpoint-symbol is-hidden" id="startpoint-legend-symbol" aria-hidden="true"></span><span id="startpoint-legend-label">Startpunt geselecteerde route</span></div>
+          <div class="map-label" id="map-label">Noord-Holland en omgeving</div>
+          <button class="fullscreen-button" id="fullscreen-button" type="button" aria-label="Kaart op volledig scherm" title="Volledig scherm">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/>
+            </svg>
+          </button>
+        </section>
+      </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="routes-data.js"></script>
+    <script>
+      (() => {
+        const colors = [
+          "#0057b8", "#c45b00", "#007a3d", "#a0005a", "#c02b00",
+          "#006b8f", "#704000", "#5941a9", "#756700", "#00635b"
+        ];
+        const routeList = document.getElementById("route-list");
+        const searchInput = document.getElementById("search");
+        const routeCount = document.getElementById("route-count");
+        const sourceNote = document.getElementById("source-note");
+        const mapLabel = document.getElementById("map-label");
+        const sidebar = document.querySelector(".sidebar");
+        const sidebarContent = document.getElementById("sidebar-content");
+        const sheetToggle = document.getElementById("sheet-toggle");
+        const sheetToggleLabel = document.getElementById("sheet-toggle-label");
+        const fullscreenButton = document.getElementById("fullscreen-button");
+        const mapWrap = document.querySelector(".map-wrap");
+        const startpointLegendSymbol = document.getElementById("startpoint-legend-symbol");
+        const mobileLayout = window.matchMedia("(max-width: 720px)");
+        const routePopupDurationMs = 2000;
+        const regionButtons = [...document.querySelectorAll(".region-button")];
+        const layers = new Map();
+        const routeDistances = new Map();
+        const popupContents = new Map();
+        const rows = new Map();
+        const routeButtons = new Map();
+        let routeIds = new Map();
+        let routeIndexesById = new Map();
+        let map;
+        let allRoutesBounds;
+        let selectedRoute = null;
+        let activeRoutes = [];
+        let activeRegions = new Set();
+        let northHollandLoadPromise;
+        let kanoroutesLoadPromise;
+        let utrechtLoadPromise;
+        let regionLoadId = 0;
+        let routePopupTimeout;
+
+        function routeSlug(name) {
+          return name
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("nl")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "route";
+        }
+
+        function updateShareUrl(routeId = null, replace = false) {
+          const url = new URL(location.href);
+          url.searchParams.set("region", [...activeRegions].join(","));
+          if (routeId) url.searchParams.set("route", routeId);
+          else url.searchParams.delete("route");
+          history[replace ? "replaceState" : "pushState"]({ routeId }, "", url);
+        }
+
+        const regionLabels = new Map(regionButtons.map(button => [button.dataset.region, button.textContent.trim()]));
+        const regionIds = new Set(regionLabels.keys());
+        const regionSources = new Map([
+          ["noord-holland", 'GPX-bron: <a href="https://www.akvodysseus.nl/disciplines/toerkano/routes-kanotochten/" target="_blank" rel="noopener noreferrer">AKV Odysseus</a>. Routeoverzicht van Peter Groen; kaartlijnen vereenvoudigd voor snel laden.'],
+          ["utrecht", 'GPX-bron: <a href="https://kanokaartutrecht.nl/" target="_blank" rel="noopener noreferrer">Kanokaart Utrecht &amp; ’t Gooi</a>. Open de routepagina voor meer informatie.'],
+          ["kanoroutes", 'GPS-bron: <a href="https://kanoroutes.nl/" target="_blank" rel="noopener noreferrer">kanoroutes.nl</a>. Alleen routes in Nederland; open de routepagina voor meer informatie.']
+        ]);
+
+        function parseRegions(value) {
+          if (value === null) return new Set(["noord-holland"]);
+          const regions = new Set(
+            (value || "")
+              .split(",")
+              .map(region => region.trim())
+              .filter(region => regionIds.has(region))
+          );
+          return value.trim() && regions.size === 0 ? new Set(["noord-holland"]) : regions;
+        }
+
+        function sameRegions(first, second) {
+          return first.size === second.size && [...first].every(region => second.has(region));
+        }
+
+        function showError(message) {
+          const error = document.createElement("div");
+          error.className = "map-error";
+          error.setAttribute("role", "alert");
+          error.textContent = message;
+          document.querySelector(".map-wrap").append(error);
+        }
+
+        if (typeof L === "undefined") {
+          showError("De kaartbibliotheek kon niet worden geladen. Controleer je internetverbinding en laad de pagina opnieuw.");
+          routeCount.textContent = "Kaart niet beschikbaar";
+          return;
+        }
+
+        if (!Array.isArray(window.GPX_ROUTES) || window.GPX_ROUTES.length === 0) {
+          showError("Er zijn geen routegegevens gevonden. Controleer of routes-data.js naast index.html staat.");
+          routeCount.textContent = "Geen routes gevonden";
+          return;
+        }
+
+        map = L.map("map", { zoomControl: false, preferCanvas: true }).setView([52.15, 5.3], 7);
+        const routePopup = L.popup();
+        L.control.zoom({ position: "bottomright" }).addTo(map);
+        const openStreetMap = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers'
+        });
+        const openTopoMap = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+          maxZoom: 17,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers, SRTM | Kaartstijl: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        });
+        openStreetMap.addTo(map);
+        L.control.layers({
+          "OpenStreetMap": openStreetMap,
+          "Topografisch (OpenTopoMap)": openTopoMap
+        }, {}, { position: "topleft" }).addTo(map);
+
+        function setSheetExpanded(expanded) {
+          const shouldExpand = mobileLayout.matches && expanded;
+          sidebar.classList.toggle("is-expanded", shouldExpand);
+          sheetToggle.setAttribute("aria-expanded", String(shouldExpand));
+          sheetToggle.setAttribute("aria-label", shouldExpand ? "Routes sluiten" : "Routes openen");
+          sheetToggleLabel.textContent = shouldExpand ? "Kaart bekijken" : "Routes bekijken";
+          sidebarContent.inert = mobileLayout.matches && !shouldExpand;
+        }
+
+        function syncFullscreenButton() {
+          const isFullscreen = document.fullscreenElement === mapWrap || mapWrap.classList.contains("is-fullscreen");
+          fullscreenButton.setAttribute("aria-label", isFullscreen ? "Volledig scherm sluiten" : "Kaart op volledig scherm");
+          fullscreenButton.title = isFullscreen ? "Volledig scherm sluiten" : "Volledig scherm";
+        }
+
+        function refreshMapSize() {
+          requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+        }
+
+        async function toggleFullscreen() {
+          try {
+            if (document.fullscreenElement === mapWrap) {
+              await document.exitFullscreen();
+            } else if (mapWrap.classList.contains("is-fullscreen")) {
+              mapWrap.classList.remove("is-fullscreen");
+            } else if (typeof mapWrap.requestFullscreen === "function") {
+              await mapWrap.requestFullscreen();
+            } else {
+              mapWrap.classList.add("is-fullscreen");
+            }
+            syncFullscreenButton();
+            refreshMapSize();
+          } catch (error) {
+            console.error("Volledig scherm openen mislukt:", error);
+            showError("De kaart kon niet op volledig scherm worden geopend.");
+          }
+        }
+
+        setSheetExpanded(false);
+        mobileLayout.addEventListener("change", () => {
+          setSheetExpanded(false);
+          updateRouteHitWidths();
+        });
+        sheetToggle.addEventListener("click", () => {
+          if (sheetToggle.dataset.swiped === "true") {
+            delete sheetToggle.dataset.swiped;
+            return;
+          }
+          setSheetExpanded(sheetToggle.getAttribute("aria-expanded") !== "true");
+          refreshMapSize();
+        });
+        let dragStartY = null;
+        sheetToggle.addEventListener("pointerdown", event => {
+          if (!mobileLayout.matches) return;
+          dragStartY = event.clientY;
+          sheetToggle.setPointerCapture(event.pointerId);
+        });
+        sheetToggle.addEventListener("pointerup", event => {
+          if (dragStartY === null) return;
+          const dragDistance = event.clientY - dragStartY;
+          dragStartY = null;
+          if (Math.abs(dragDistance) < 35) return;
+          sheetToggle.dataset.swiped = "true";
+          setSheetExpanded(dragDistance < 0);
+          refreshMapSize();
+        });
+        sheetToggle.addEventListener("pointercancel", () => { dragStartY = null; });
+        fullscreenButton.addEventListener("click", toggleFullscreen);
+        document.addEventListener("fullscreenchange", () => {
+          syncFullscreenButton();
+          refreshMapSize();
+        });
+
+        function routeColor(index) {
+          return colors[index % colors.length];
+        }
+
+        function routeHitWidth() {
+          return mobileLayout.matches ? 32 : 20;
+        }
+
+        function updateRouteHitWidths() {
+          layers.forEach(layer => {
+            layer.eachLayer(child => {
+              if (child instanceof L.Polyline && child.options.interactive !== false) {
+                child.setStyle({ weight: routeHitWidth() });
+              }
+            });
+          });
+        }
+
+        function calculateDistanceKm(segments) {
+          const earthRadiusKm = 6371.0088;
+          let distanceKm = 0;
+          for (const segment of segments) {
+            for (let index = 1; index < segment.length; index += 1) {
+              const [latitude1, longitude1] = segment[index - 1];
+              const [latitude2, longitude2] = segment[index];
+              const latitudeDelta = (latitude2 - latitude1) * Math.PI / 180;
+              const longitudeDelta = (longitude2 - longitude1) * Math.PI / 180;
+              const haversine =
+                Math.sin(latitudeDelta / 2) ** 2 +
+                Math.cos(latitude1 * Math.PI / 180) *
+                  Math.cos(latitude2 * Math.PI / 180) *
+                  Math.sin(longitudeDelta / 2) ** 2;
+              distanceKm += 2 * earthRadiusKm * Math.asin(Math.sqrt(haversine));
+            }
+          }
+          return distanceKm;
+        }
+
+        function clearSelection({ syncUrl = true, replaceUrl = true } = {}) {
+          selectedRoute = null;
+          layers.forEach((layer, index) => {
+            layer.eachLayer(child => {
+              if (child instanceof L.Polyline && child.options.routeCasing === true) {
+                child.setStyle({ color: "#fff", weight: 7, opacity: 0.98 });
+              } else if (child instanceof L.Polyline && child.options.interactive === false) {
+                child.setStyle({
+                  color: routeColor(index),
+                  weight: 5,
+                  opacity: 1
+                });
+              } else if (child instanceof L.CircleMarker) {
+                child.setStyle({ opacity: 0, fillOpacity: 0 });
+              }
+            });
+          });
+          startpointLegendSymbol.classList.add("is-hidden");
+          routeButtons.forEach(button => {
+            button.closest(".route-row").classList.remove("selected");
+            button.setAttribute("aria-pressed", "false");
+          });
+          map.closePopup();
+          if (syncUrl && activeRegions.size) updateShareUrl(null, replaceUrl);
+        }
+
+        function selectRoute(index, { syncUrl = true } = {}) {
+          selectedRoute = index;
+          layers.forEach((layer, routeIndex) => {
+            const selected = routeIndex === selectedRoute;
+            layer.eachLayer(child => {
+              if (child instanceof L.Polyline && child.options.routeCasing === true) {
+                child.setStyle({ color: "#fff", weight: 8, opacity: 0.98 });
+              } else if (child instanceof L.Polyline && child.options.interactive === false) {
+                child.setStyle({
+                  color: selected ? "#d93611" : routeColor(routeIndex),
+                  weight: selected ? 6 : 4,
+                  opacity: selected ? 1 : 0.7
+                });
+                if (selected) child.bringToFront();
+              } else if (selected && child instanceof L.Polyline) {
+                child.bringToFront();
+              } else if (child instanceof L.CircleMarker) {
+                child.setStyle({
+                  opacity: selected ? 1 : 0,
+                  fillOpacity: selected ? 1 : 0
+                });
+              }
+            });
+            if (selected) {
+              startpointLegendSymbol.classList.remove("is-hidden");
+              layer.eachLayer(child => {
+                if (child instanceof L.CircleMarker) child.bringToFront();
+              });
+            }
+          });
+          if (selectedRoute === null) startpointLegendSymbol.classList.add("is-hidden");
+          routeButtons.forEach((button, routeIndex) => {
+            const selected = routeIndex === selectedRoute;
+            button.closest(".route-row").classList.toggle("selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+          });
+          if (syncUrl) updateShareUrl(routeIds.get(index));
+        }
+
+        function toggleRouteSelection(index, options) {
+          if (selectedRoute === index) clearSelection(options);
+          else selectRoute(index, options);
+        }
+
+        function openRoutePopup(index) {
+          const layer = layers.get(index);
+          const content = popupContents.get(index);
+          if (layer && content) {
+            window.clearTimeout(routePopupTimeout);
+            routePopup
+              .setLatLng(layer.getBounds().getCenter())
+              .setContent(content);
+            map.openPopup(routePopup);
+            routePopupTimeout = window.setTimeout(() => {
+              if (map.hasLayer(routePopup)) map.closePopup(routePopup);
+            }, routePopupDurationMs);
+          }
+        }
+
+        function restoreRoute(routeId) {
+          const index = routeIndexesById.get(routeId);
+          const layer = layers.get(index);
+          if (index === undefined || !layer || !layer.getBounds().isValid()) return false;
+
+          if (!map.hasLayer(layer)) {
+            layer.addTo(map);
+            const checkbox = rows.get(index);
+            if (checkbox) checkbox.checked = true;
+          }
+          selectRoute(index, { syncUrl: false });
+          map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 14 });
+          map.closePopup();
+          openRoutePopup(index);
+          return true;
+        }
+
+        function renderList(filter = "") {
+          const normalizedFilter = filter.trim().toLocaleLowerCase("nl");
+          routeList.replaceChildren();
+          rows.clear();
+          routeButtons.clear();
+
+          const groups = new Map();
+          activeRoutes.forEach((route, index) => {
+            const searchableText =
+              `${route.name} ${route.location || ""} ${route.folder || route.group || ""}`.toLocaleLowerCase("nl");
+            if (!searchableText.includes(normalizedFilter)) return;
+            const routeGroup = route.folder || route.group || "GPS Groningen";
+            const group = activeRegions.size > 1
+              ? `${regionLabels.get(route.sourceRegion)} · ${routeGroup}`
+              : routeGroup;
+            if (!groups.has(group)) groups.set(group, []);
+            groups.get(group).push({ route, index });
+          });
+
+          if (groups.size === 0) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent = "Geen routes gevonden.";
+            routeList.append(empty);
+            return;
+          }
+
+          groups.forEach((items, group) => {
+            const heading = document.createElement("h3");
+            heading.className = "group-title";
+            heading.textContent = group;
+            routeList.append(heading);
+
+            items.forEach(({ route, index }) => {
+              const row = document.createElement("div");
+              row.className = "route-row";
+              if (index === selectedRoute) row.classList.add("selected");
+
+              const checkbox = document.createElement("input");
+              checkbox.className = "route-toggle";
+              checkbox.type = "checkbox";
+              checkbox.checked = map.hasLayer(layers.get(index));
+              checkbox.setAttribute("aria-label", `Toon ${route.name} op de kaart`);
+
+              const color = document.createElement("span");
+              color.className = "route-color";
+              color.style.backgroundColor = routeColor(index);
+
+              const name = document.createElement("button");
+              name.className = "route-name";
+              name.type = "button";
+              const distanceKm = routeDistances.get(index);
+              const distanceLabel = Number.isFinite(distanceKm)
+                ? ` (${Math.round(distanceKm).toLocaleString("nl-NL")} km)`
+                : "";
+              name.textContent = `${route.name}${distanceLabel}`;
+              name.title = "Zoom naar en licht deze route uit";
+              name.setAttribute("aria-pressed", String(index === selectedRoute));
+
+              checkbox.addEventListener("change", () => {
+                const layer = layers.get(index);
+                if (!layer) return;
+                if (checkbox.checked) layer.addTo(map);
+                else {
+                  map.removeLayer(layer);
+                  if (selectedRoute === index) clearSelection();
+                }
+              });
+
+              name.addEventListener("click", () => {
+                const layer = layers.get(index);
+                if (layer && layer.getBounds().isValid()) {
+                  if (selectedRoute === index) {
+                    clearSelection();
+                    return;
+                  }
+                  if (!map.hasLayer(layer)) {
+                    layer.addTo(map);
+                    checkbox.checked = true;
+                  }
+                  selectRoute(index);
+                  map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 14 });
+                  map.closePopup();
+                  openRoutePopup(index);
+                  if (mobileLayout.matches) setSheetExpanded(false);
+                }
+              });
+
+              row.append(checkbox, color, name);
+              routeList.append(row);
+              rows.set(index, checkbox);
+              routeButtons.set(index, name);
+            });
+          });
+        }
+
+        function escapeHtml(value) {
+          return String(value).replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+          })[character]);
+        }
+
+        function renderRoutes(routes, { fitMap = true } = {}) {
+          activeRoutes = routes;
+          selectedRoute = null;
+          routeIds = new Map();
+          routeIndexesById = new Map();
+          routeDistances.clear();
+          popupContents.clear();
+          const slugCounts = new Map();
+          activeRoutes.forEach((route, index) => {
+            const slug = routeSlug(route.name);
+            const routeKey = activeRegions.size > 1 ? `${route.sourceRegion}-${slug}` : slug;
+            const count = (slugCounts.get(routeKey) || 0) + 1;
+            slugCounts.set(routeKey, count);
+            const routeId = count === 1 ? routeKey : `${routeKey}-${count}`;
+            routeIds.set(index, routeId);
+            routeIndexesById.set(routeId, index);
+          });
+          layers.forEach(layer => map.removeLayer(layer));
+          layers.clear();
+          rows.clear();
+          routeButtons.clear();
+
+          let routesWithPoints = 0;
+          const routeBounds = [];
+
+          activeRoutes.forEach((route, index) => {
+            const segments = Array.isArray(route.segments) ? route.segments : [];
+            const validSegments = segments.filter(segment => Array.isArray(segment) && segment.length > 1);
+            if (validSegments.length === 0) return;
+
+            const layer = L.featureGroup();
+            validSegments.forEach(segment => {
+              L.polyline(segment, {
+                color: "#fff",
+                weight: 7,
+                opacity: 0.98,
+                lineCap: "round",
+                lineJoin: "round",
+                interactive: false,
+                routeCasing: true
+              }).addTo(layer);
+              L.polyline(segment, {
+                color: routeColor(index),
+                weight: 5,
+                opacity: 1,
+                lineCap: "round",
+                lineJoin: "round",
+                interactive: false
+              }).addTo(layer);
+              const hitArea = L.polyline(segment, {
+                color: routeColor(index),
+                weight: routeHitWidth(),
+                opacity: 0,
+                lineCap: "round",
+                lineJoin: "round",
+                interactive: true
+              }).addTo(layer);
+              hitArea.on("mouseover", () => {
+                if (selectedRoute === index) return;
+                const dimmed = selectedRoute !== null;
+                layer.eachLayer(child => {
+                  if (child instanceof L.Polyline && child.options.routeCasing === true) {
+                    child.setStyle({ weight: 7.5 });
+                    child.bringToFront();
+                  } else if (child instanceof L.Polyline && child.options.interactive === false) {
+                    child.setStyle({
+                      weight: dimmed ? 5.5 : 6.5,
+                      opacity: dimmed ? 0.9 : 1
+                    });
+                    child.bringToFront();
+                  }
+                });
+              });
+              hitArea.on("mouseout", () => {
+                const selected = selectedRoute === index;
+                const dimmed = selectedRoute !== null;
+                layer.eachLayer(child => {
+                  if (child instanceof L.Polyline && child.options.routeCasing === true) {
+                    child.setStyle({ weight: selected ? 8 : 7, opacity: selected ? 0.98 : 0.95 });
+                  } else if (child instanceof L.Polyline && child.options.interactive === false) {
+                    child.setStyle({
+                      color: selected ? "#d93611" : routeColor(index),
+                      weight: selected ? 6 : dimmed ? 4 : 5,
+                      opacity: selected ? 1 : dimmed ? 0.7 : 1
+                    });
+                  }
+                });
+              });
+              hitArea.on("click", () => {
+                toggleRouteSelection(index);
+                if (selectedRoute === index) openRoutePopup(index);
+              });
+            });
+            const startPoint = validSegments[0][0];
+            L.circleMarker(startPoint, {
+              radius: 6,
+              color: "#fff",
+              weight: 2,
+              fillColor: "#168a63",
+              opacity: 0,
+              fillOpacity: 0,
+              interactive: false
+            }).addTo(layer);
+
+            const pdfLink = typeof route.pdf === "string"
+              ? `<p class="popup-detail"><a href="${escapeHtml(route.pdf)}" target="_blank" rel="noopener noreferrer">Routebeschrijving openen (PDF)</a></p>`
+              : "";
+            const sourceLink = typeof route.source === "string"
+              ? `<p class="popup-detail"><a href="${escapeHtml(route.source)}" target="_blank" rel="noopener noreferrer">${/\.zip(?:$|[?#])/i.test(route.source) ? "Originele GPS-route downloaden (ZIP)" : "Originele GPX downloaden"}</a></p>`
+              : "";
+            const routePageLink = typeof route.sourcePage === "string"
+              ? `<p class="popup-detail"><a href="${escapeHtml(route.sourcePage)}" target="_blank" rel="noopener noreferrer">Routepagina openen</a></p>`
+              : "";
+            const distanceKm = calculateDistanceKm(validSegments);
+            routeDistances.set(index, distanceKm);
+            const popupContent =
+              `<p class="popup-title">${escapeHtml(route.name)}</p><p class="popup-detail">${distanceKm.toLocaleString("nl-NL", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km</p>${pdfLink}${sourceLink}${routePageLink}`;
+            popupContents.set(index, popupContent);
+            layer.addTo(map);
+            layers.set(index, layer);
+            routeBounds.push(layer.getBounds());
+            routesWithPoints += 1;
+          });
+
+          allRoutesBounds = routeBounds.length > 0
+            ? routeBounds.reduce((bounds, routeBound) => bounds.extend(routeBound), L.latLngBounds([]))
+            : null;
+
+          if (fitMap && allRoutesBounds && allRoutesBounds.isValid()) {
+            map.fitBounds(allRoutesBounds, { padding: [36, 36], maxZoom: 10 });
+          } else {
+            showError("De routegegevens bevatten geen bruikbare GPS-punten.");
+          }
+
+          routeCount.textContent = `${routesWithPoints} routes`;
+          renderList(searchInput.value);
+        }
+
+        function loadNorthHollandRoutes() {
+          if (Array.isArray(window.GPX_ROUTES_NOORD_HOLLAND)) {
+            return Promise.resolve(window.GPX_ROUTES_NOORD_HOLLAND);
+          }
+
+          if (!northHollandLoadPromise) {
+            northHollandLoadPromise = new Promise((resolve, reject) => {
+              const script = document.createElement("script");
+              script.src = "routes-noord-holland-data.js";
+              script.onload = () => {
+                if (Array.isArray(window.GPX_ROUTES_NOORD_HOLLAND)) {
+                  resolve(window.GPX_ROUTES_NOORD_HOLLAND);
+                } else {
+                  reject(new Error("Het Noord-Holland-bestand bevat geen routegegevens."));
+                }
+              };
+              script.onerror = () => reject(new Error("routes-noord-holland-data.js kon niet worden geladen."));
+              document.body.append(script);
+            }).catch(error => {
+              northHollandLoadPromise = null;
+              throw error;
+            });
+          }
+
+          return northHollandLoadPromise;
+        }
+
+        function loadKanoroutesRoutes() {
+          if (Array.isArray(window.GPX_ROUTES_KANOROUTES)) {
+            return Promise.resolve(window.GPX_ROUTES_KANOROUTES);
+          }
+
+          if (!kanoroutesLoadPromise) {
+            kanoroutesLoadPromise = new Promise((resolve, reject) => {
+              const script = document.createElement("script");
+              script.src = "routes-kanoroutes-data.js?v=province-groups-1";
+              script.onload = () => {
+                if (Array.isArray(window.GPX_ROUTES_KANOROUTES)) {
+                  resolve(window.GPX_ROUTES_KANOROUTES);
+                } else {
+                  reject(new Error("Het kanoroutes.nl-bestand bevat geen routegegevens."));
+                }
+              };
+              script.onerror = () => reject(new Error("routes-kanoroutes-data.js kon niet worden geladen."));
+              document.body.append(script);
+            }).catch(error => {
+              kanoroutesLoadPromise = null;
+              throw error;
+            });
+          }
+
+          return kanoroutesLoadPromise;
+        }
+
+        function loadUtrechtRoutes() {
+          if (Array.isArray(window.GPX_ROUTES_UTRECHT)) {
+            return Promise.resolve(window.GPX_ROUTES_UTRECHT);
+          }
+
+          if (!utrechtLoadPromise) {
+            utrechtLoadPromise = new Promise((resolve, reject) => {
+              const script = document.createElement("script");
+              script.src = "routes-utrecht-data.js";
+              script.onload = () => {
+                if (Array.isArray(window.GPX_ROUTES_UTRECHT)) {
+                  resolve(window.GPX_ROUTES_UTRECHT);
+                } else {
+                  reject(new Error("Het Utrecht-bestand bevat geen routegegevens."));
+                }
+              };
+              script.onerror = () => reject(new Error("routes-utrecht-data.js kon niet worden geladen."));
+              document.body.append(script);
+            }).catch(error => {
+              utrechtLoadPromise = null;
+              throw error;
+            });
+          }
+
+          return utrechtLoadPromise;
+        }
+
+        async function changeRegions(regions, { syncUrl = true, routeId = null } = {}) {
+          if (sameRegions(regions, activeRegions) && (regions.size === 0 || activeRoutes.length > 0)) return;
+          const loadId = ++regionLoadId;
+          const fitMap = activeRegions.size === 0;
+          activeRegions = new Set(regions);
+          regionButtons.forEach(button => {
+            button.setAttribute("aria-pressed", String(activeRegions.has(button.dataset.region)));
+          });
+          if (syncUrl) updateShareUrl(null);
+          document.querySelector(".map-error")?.remove();
+
+          map.closePopup();
+          layers.forEach(layer => map.removeLayer(layer));
+          layers.clear();
+          rows.clear();
+          routeButtons.clear();
+          selectedRoute = null;
+          activeRoutes = [];
+          routeList.replaceChildren();
+          allRoutesBounds = null;
+          const mapLabels = new Map([
+            ["noord", "Groningen · Friesland · Drenthe"],
+            ["noord-holland", "Noord-Holland en omgeving"],
+            ["utrecht", "Utrecht en ’t Gooi"],
+            ["kanoroutes", "Nederland · kanoroutes.nl"]
+          ]);
+          mapLabel.textContent = activeRegions.size
+            ? [...activeRegions].map(region => mapLabels.get(region)).join(" · ")
+            : "Selecteer een routegebied";
+          const sources = [...activeRegions]
+            .map(region => regionSources.get(region))
+            .filter(Boolean);
+          if (sources.length) {
+            sourceNote.hidden = false;
+            sourceNote.innerHTML = sources.join("<br>");
+          } else {
+            sourceNote.hidden = true;
+            sourceNote.replaceChildren();
+          }
+
+          if (activeRegions.size === 0) {
+            routeCount.textContent = "0 routes";
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent = "Selecteer een routegebied om routes te tonen.";
+            routeList.append(empty);
+            return;
+          }
+
+          routeCount.textContent = "Routes laden…";
+          try {
+            const routesByRegion = await Promise.all([...activeRegions].map(async region => {
+              const routes = region === "noord-holland"
+                ? await loadNorthHollandRoutes()
+                : region === "utrecht"
+                  ? await loadUtrechtRoutes()
+                  : region === "kanoroutes"
+                    ? await loadKanoroutesRoutes()
+                    : window.GPX_ROUTES;
+              return routes.map(route => ({ ...route, sourceRegion: region }));
+            }));
+            if (regionLoadId !== loadId) return;
+            const routes = routesByRegion.flat();
+            renderRoutes(routes, { fitMap });
+            if (routeId && !restoreRoute(routeId)) {
+              showError("De gedeelde route kon niet worden gevonden in dit routegebied.");
+            }
+          } catch (error) {
+            if (regionLoadId !== loadId) return;
+            console.error("Routegebied laden mislukt:", error);
+            routeCount.textContent = "Routes laden mislukt";
+            showError("De routes konden niet worden geladen. Probeer het opnieuw.");
+          }
+        }
+
+        regionButtons.forEach(button => {
+          button.addEventListener("click", () => {
+            const regions = new Set(activeRegions);
+            if (regions.has(button.dataset.region)) regions.delete(button.dataset.region);
+            else regions.add(button.dataset.region);
+            changeRegions(regions);
+          });
+        });
+        const sharedUrl = new URL(location.href);
+        const initialRegions = parseRegions(sharedUrl.searchParams.get("region"));
+        const initialRouteId = sharedUrl.searchParams.get("route");
+        changeRegions(initialRegions, { syncUrl: false, routeId: initialRouteId });
+
+        window.addEventListener("popstate", () => {
+          const url = new URL(location.href);
+          const regions = parseRegions(url.searchParams.get("region"));
+          const routeId = url.searchParams.get("route");
+          if (!sameRegions(regions, activeRegions) || (regions.size > 0 && activeRoutes.length === 0)) {
+            changeRegions(regions, { syncUrl: false, routeId });
+          } else if (routeId) {
+            if (!restoreRoute(routeId)) {
+              clearSelection({ syncUrl: false });
+              showError("De gedeelde route kon niet worden gevonden in dit routegebied.");
+            } else {
+              document.querySelector(".map-error")?.remove();
+            }
+          } else {
+            document.querySelector(".map-error")?.remove();
+            clearSelection({ syncUrl: false });
+          }
+        });
+
+        searchInput.addEventListener("input", () => renderList(searchInput.value));
+        document.getElementById("show-all").addEventListener("click", () => {
+          layers.forEach(layer => layer.addTo(map));
+          rows.forEach(checkbox => { checkbox.checked = true; });
+          if (allRoutesBounds && allRoutesBounds.isValid()) {
+            map.fitBounds(allRoutesBounds, { padding: [36, 36], maxZoom: 10 });
+          }
+        });
+        document.getElementById("hide-all").addEventListener("click", () => {
+          layers.forEach(layer => map.removeLayer(layer));
+          rows.forEach(checkbox => { checkbox.checked = false; });
+          clearSelection();
+        });
+      })();
+    </script>
+  </body>
+</html>
