@@ -1,6 +1,6 @@
 # Kajakroutes Dinsdaggers
 
-Een interactieve Leaflet-kaart met kajakroutes uit Noord-Nederland, Noord-Holland en heel Nederland. De slogan in de kop linkt naar de routebeschrijvingen van AKV Odysseus. Donkere, verzadigde routekleuren met een lichte omlijning houden de routes goed zichtbaar op de kaart.
+Een interactieve Leaflet-kaart met kajakroutes uit Noord-Holland en omgeving. De slogan in de kop linkt naar de routebeschrijvingen van AKV Odysseus. Donkere, verzadigde routekleuren met een lichte omlijning houden de routes goed zichtbaar op de kaart.
 
 ## Lokaal bekijken
 
@@ -12,30 +12,28 @@ node server.js
 
 Open daarna [http://localhost:4173](http://localhost:4173).
 
+De knoppen **Kajakroutes** en **Kajakroute-heatmap** schakelen de kaartlagen onafhankelijk van elkaar aan en uit, zodat beide tegelijk zichtbaar kunnen zijn. De heatmap combineert de kajakroutes op de kaart met lokale GPX-opnames. Elk routevak van ongeveer 25 meter telt maximaal één keer per route of opname mee, zodat vaker bevaren stukken sterker oplichten. De vlekstraal en vervaging worden aangepast aan het zoomniveau om de heatmap bij uitzoomen compacter te houden.
+
+De heatmap wordt vooraf lokaal gegenereerd; GitHub Pages heeft geen server nodig. De site downloadt alleen `kayak-heatmap-data.json`, niet de ruwe GPX-bestanden. De geaggregeerde heatmapdata is wel openbaar en kan routes tot ongeveer 25 meter nauwkeurig tonen. Neem het JSON-bestand op in de Pages-publicatie, maar publiceer de bron-GPX-bestanden niet. Als de heatmap aanstaat, kun je de intensiteit, vlekbreedte en het kleurcontrast live aanpassen. De standaardwaarden zijn `1.0×`, `1.0×` en `1.0×`; pas ze aan in `HEATMAP_DEFAULTS` in `index.html`.
+
+De TOP25raster-laag is alleen beschikbaar tussen schaal 1:50.000 en 1:4.000; bij het kiezen van die laag wordt de kaart automatisch naar dat zoombereik aangepast.
+
 ## Routedata vernieuwen
 
-- Genereer de routes uit `D:\GPS Groningen` met `.\build-routes.ps1`.
 - Haal de Noord-Holland-routes en bijbehorende PDF-links opnieuw op met `node build-noord-holland-routes.js`.
-- Haal de Utrechtse en Gooi-routes opnieuw op met `node build-utrecht-routes.js`.
-- Haal de Nederlandse routes van kanoroutes.nl opnieuw op met `node build-kanoroutes-data.js`. Deze controleert de GPS-tracks tegen de Nederlandse landsgrens, slaat routes buiten Nederland over en groepeert de routes per provincie. Gebruik `node build-kanoroutes-data.js --regroup-existing` om alleen de provincie-indeling opnieuw te berekenen.
+- Genereer de heatmap opnieuw na het toevoegen of wijzigen van GPX-opnames met `node build-kayak-heatmap.js`. Het script leest standaard uit `D:\Dinsdaggers\whatsapp` en schrijft `kayak-heatmap-data.json` in deze map. Stel voor een andere bronmap de omgevingsvariabele `KAYAK_GPX_DIRECTORY` in.
 
-De route-lijst toont de afstand in hele kilometers achter de routenaam. De route-pop-up toont de berekende afstand in kilometers en links naar de oorspronkelijke GPS-bestanden en routepagina's. Een groene stip markeert het startpunt van de geselecteerde route. De routes worden vereenvoudigd voor een vlotte weergave; de afstand is daarop gebaseerd. Gebruik de regio-knoppen als schakelaars om routes uit meerdere gebieden tegelijk te tonen.
+De route-lijst toont de afstand in hele kilometers achter de routenaam. De route-pop-up toont de berekende afstand in kilometers en links naar de oorspronkelijke GPS-bestanden en routepagina's. Een groene stip markeert het startpunt van de geselecteerde route. De routes worden vereenvoudigd voor een vlotte weergave; de afstand is daarop gebaseerd.
 
 Op mobiel kun je het routepaneel vanaf de handgreep omhoog slepen en na het kiezen van een route weer omlaag schuiven. Met de knop rechtsboven open je de kaart schermvullend. De routes hebben een bredere, onzichtbare klikzone zodat selecteren op touchscreens makkelijker is.
 
 ## Een route delen
 
-Selecteer een route in de lijst om de deelbare URL bij te werken. De link opent direct de geselecteerde routegebieden, zoomt in op de route en toont de routebeschrijving. Meerdere regio's staan komma-gescheiden in de `region`-parameter. Bijvoorbeeld:
+Selecteer een route in de lijst om de deelbare URL bij te werken. De link zoomt in op de route en toont de routebeschrijving. Bijvoorbeeld:
 
-`https://frankfru.github.io/kanoroutes-nederland/?region=noord-holland&route=1-1-grachten-van-alkmaar`
-
-`https://frankfru.github.io/kanoroutes-nederland/?region=noord-holland,utrecht`
+`?route=1-1-grachten-van-alkmaar`
 
 ## Bronnen
 
 - Noord-Holland-routes en clublogo: [AKV Odysseus](https://www.akvodysseus.nl/). Het routeoverzicht is samengesteld door Peter Groen; de routes staan op de pagina [Routes kanotochten](https://www.akvodysseus.nl/disciplines/toerkano/routes-kanotochten/).
-- Utrechtse en Gooi-routes en GPS-tracks: [Kanokaart Utrecht & 't Gooi](https://kanokaartutrecht.nl/).
-- Overige Nederlandse routepagina's en GPS-tracks: [kanoroutes.nl](https://kanoroutes.nl/). De landsgrenscontrole gebruikt [Natural Earth](https://www.naturalearthdata.com/).
-- Achtergrondkaarten: [OpenStreetMap](https://www.openstreetmap.org/copyright) en [OpenTopoMap](https://opentopomap.org/).
-
-De routegegevens van kanoroutes.nl en kanokaartutrecht.nl zijn toegevoegd voor persoonlijk gebruik. Regel zelf toestemming voordat je die gegevens breder gebruikt.
+- Achtergrondkaarten: [OpenStreetMap](https://www.openstreetmap.org/copyright), [OpenTopoMap](https://opentopomap.org/), de BRT-Achtergrondkaart en TOP25raster via [PDOK](https://www.pdok.nl/).
