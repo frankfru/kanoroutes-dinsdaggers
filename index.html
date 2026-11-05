@@ -941,11 +941,21 @@
           maxZoom: 19,
           attribution: '&copy; <a href="https://www.kadaster.nl/">Kadaster</a> | <a href="https://www.pdok.nl/">PDOK</a> - BRT-Achtergrondkaart'
         });
+        const aerialPhoto = L.tileLayer("https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/{z}/{x}/{y}.jpeg", {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.kadaster.nl/">Kadaster</a> | <a href="https://www.pdok.nl/">PDOK</a> - Luchtfoto Actueel Ortho 8cm RGB'
+        });
         const top25Raster = L.tileLayer.wms("https://service.pdok.nl/kadaster/brt-topraster/wms/v1_0", {
           layers: "top25raster",
           format: "image/png",
           transparent: false,
           attribution: '&copy; <a href="https://www.kadaster.nl/">Kadaster</a> | <a href="https://www.pdok.nl/">PDOK</a> - TOP25raster'
+        });
+        const natura2000 = L.tileLayer.wms("https://service.pdok.nl/rvo/natura2000/wms/v1_0", {
+          layers: "natura2000",
+          format: "image/png",
+          transparent: true,
+          attribution: '&copy; <a href="https://www.rvo.nl/">RVO</a> | <a href="https://www.pdok.nl/">PDOK</a> - Natura 2000'
         });
         const cadastralMap = L.tileLayer.wms("https://service.pdok.nl/kadaster/brk-kadastrale-kaart/wms/v5_0", {
           layers: "Kadastralekaart",
@@ -966,9 +976,12 @@
           "OpenStreetMap": openStreetMap,
           "Topografisch (OpenTopoMap)": openTopoMap,
           "Topografisch (BRT - Kadaster/PDOK)": brtBackgroundMap,
+          "Luchtfoto (PDOK)": aerialPhoto,
           "Topografisch (TOP25 - Kadaster/PDOK)": top25Raster,
           "Kadastrale kaart (PDOK)": cadastralMap
-        }, {}, { position: "topleft" }).addTo(map);
+        }, {
+          "Natura 2000 (PDOK)": natura2000
+        }, { position: "topleft" }).addTo(map);
         function updateMapZoomLimits() {
           const top25Selected = map.hasLayer(top25Raster);
           const cadastralSelected = map.hasLayer(cadastralMap);

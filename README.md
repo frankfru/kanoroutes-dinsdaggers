@@ -16,7 +16,7 @@ De knoppen **Kajakroutes** en **Kajakroute-heatmap** schakelen de kaartlagen ona
 
 De heatmap wordt vooraf lokaal gegenereerd; GitHub Pages heeft geen server nodig. De site downloadt alleen `kayak-heatmap-data.json`, niet de ruwe GPX-bestanden. De geaggregeerde heatmapdata is wel openbaar en kan routes tot ongeveer 25 meter nauwkeurig tonen. Neem het JSON-bestand op in de Pages-publicatie, maar publiceer de bron-GPX-bestanden niet. Als de heatmap aanstaat, kun je de intensiteit, vlekbreedte en het kleurcontrast live aanpassen. De standaardwaarden zijn `1.0×`, `1.0×` en `1.0×`; pas ze aan in `HEATMAP_DEFAULTS` in `index.html`.
 
-De TOP25raster-laag is alleen beschikbaar tussen schaal 1:50.000 en 1:4.000; bij het kiezen van die laag wordt de kaart automatisch naar dat zoombereik aangepast. De Kadastrale kaart van PDOK gebruikt de standaardvisualisatie en wordt getoond vanaf zoomniveau 17. De kadastrale grenzen geven alleen een indicatie van de ligging; er kunnen geen maten aan worden ontleend.
+De luchtfoto van PDOK en Natura 2000-gebieden zijn beschikbaar via de laagkeuze; Natura 2000 is een transparante overlay die tegelijk met een achtergrondkaart kan worden getoond. De TOP25raster-laag is alleen beschikbaar tussen schaal 1:50.000 en 1:4.000; bij het kiezen van die laag wordt de kaart automatisch naar dat zoombereik aangepast. De Kadastrale kaart van PDOK gebruikt de standaardvisualisatie en wordt getoond vanaf zoomniveau 17. De kadastrale grenzen geven alleen een indicatie van de ligging; er kunnen geen maten aan worden ontleend.
 
 ## Routedata vernieuwen
 
@@ -36,4 +36,4 @@ Selecteer een route in de lijst om de deelbare URL bij te werken. De link zoomt 
 ## Bronnen
 
 - Noord-Holland-routes en clublogo: [AKV Odysseus](https://www.akvodysseus.nl/). Het routeoverzicht is samengesteld door Peter Groen; de routes staan op de pagina [Routes kanotochten](https://www.akvodysseus.nl/disciplines/toerkano/routes-kanotochten/).
-- Achtergrondkaarten: [OpenStreetMap](https://www.openstreetmap.org/copyright), [OpenTopoMap](https://opentopomap.org/), de BRT-Achtergrondkaart, TOP25raster en de [Kadastrale kaart](https://www.pdok.nl/introductie/-/article/kadastrale-kaart) via [PDOK](https://www.pdok.nl/).
+- Achtergrondkaarten en overlays: [OpenStreetMap](https://www.openstreetmap.org/copyright), [OpenTopoMap](https://opentopomap.org/), de BRT-Achtergrondkaart, [luchtfoto](https://www.pdok.nl/) en TOP25raster via [PDOK](https://www.pdok.nl/), de [Kadastrale kaart](https://www.pdok.nl/introductie/-/article/kadastrale-kaart) en Natura 2000 via RVO/PDOK.
