@@ -778,10 +778,6 @@
     <script src="routes-noord-holland-data.js"></script>
     <script>
       (() => {
-        const colors = [
-          "#0057b8", "#c45b00", "#007a3d", "#a0005a", "#c02b00",
-          "#006b8f", "#704000", "#5941a9", "#756700", "#00635b"
-        ];
         const routeList = document.getElementById("route-list");
         const searchInput = document.getElementById("search");
         const routeCount = document.getElementById("route-count");
@@ -1066,8 +1062,12 @@
           refreshMapSize();
         });
 
-        function routeColor(index) {
-          return colors[index % colors.length];
+        function routeGroupName(route) {
+          return route.folder || route.group || "GPS Groningen";
+        }
+
+        function routeColor() {
+          return "#a34214";
         }
 
         function routeHitWidth() {
@@ -1109,11 +1109,11 @@
           layers.forEach((layer, index) => {
             layer.eachLayer(child => {
               if (child instanceof L.Polyline && child.options.routeCasing === true) {
-                child.setStyle({ color: "#fff", weight: 7, opacity: 0.98 });
+                child.setStyle({ color: "#fff", weight: 6, opacity: 0.98 });
               } else if (child instanceof L.Polyline && child.options.interactive === false) {
                 child.setStyle({
                   color: routeColor(index),
-                  weight: 5,
+                  weight: 4,
                   opacity: 1
                 });
               } else if (child instanceof L.CircleMarker) {
@@ -1136,11 +1136,11 @@
             const selected = routeIndex === selectedRoute;
             layer.eachLayer(child => {
               if (child instanceof L.Polyline && child.options.routeCasing === true) {
-                child.setStyle({ color: "#fff", weight: 8, opacity: 0.98 });
+                child.setStyle({ color: "#fff", weight: 7, opacity: 0.98 });
               } else if (child instanceof L.Polyline && child.options.interactive === false) {
                 child.setStyle({
                   color: selected ? "#d93611" : routeColor(routeIndex),
-                  weight: selected ? 6 : 4,
+                  weight: selected ? 5 : 4,
                   opacity: selected ? 1 : 0.7
                 });
                 if (selected) child.bringToFront();
@@ -1217,8 +1217,7 @@
             const searchableText =
               `${route.name} ${route.location || ""} ${route.folder || route.group || ""}`.toLocaleLowerCase("nl");
             if (!searchableText.includes(normalizedFilter)) return;
-            const routeGroup = route.folder || route.group || "GPS Groningen";
-            const group = routeGroup;
+            const group = routeGroupName(route);
             if (!groups.has(group)) groups.set(group, []);
             groups.get(group).push({ route, index });
           });
@@ -1346,7 +1345,7 @@
             validSegments.forEach(segment => {
               L.polyline(segment, {
                 color: "#fff",
-                weight: 7,
+                weight: 6,
                 opacity: 0.98,
                 lineCap: "round",
                 lineJoin: "round",
@@ -1355,7 +1354,7 @@
               }).addTo(layer);
               L.polyline(segment, {
                 color: routeColor(index),
-                weight: 5,
+                weight: 4,
                 opacity: 1,
                 lineCap: "round",
                 lineJoin: "round",
@@ -1374,7 +1373,7 @@
                 const dimmed = selectedRoute !== null;
                 layer.eachLayer(child => {
                   if (child instanceof L.Polyline && child.options.routeCasing === true) {
-                    child.setStyle({ weight: 7.5 });
+                    child.setStyle({ weight: 6.5 });
                     child.bringToFront();
                   } else if (child instanceof L.Polyline && child.options.interactive === false) {
                     child.setStyle({
@@ -1390,11 +1389,11 @@
                 const dimmed = selectedRoute !== null;
                 layer.eachLayer(child => {
                   if (child instanceof L.Polyline && child.options.routeCasing === true) {
-                    child.setStyle({ weight: selected ? 8 : 7, opacity: selected ? 0.98 : 0.95 });
+                    child.setStyle({ weight: selected ? 7 : 6, opacity: selected ? 0.98 : 0.95 });
                   } else if (child instanceof L.Polyline && child.options.interactive === false) {
                     child.setStyle({
                       color: selected ? "#d93611" : routeColor(index),
-                      weight: selected ? 6 : dimmed ? 4 : 5,
+                      weight: selected ? 5 : dimmed ? 3 : 4,
                       opacity: selected ? 1 : dimmed ? 0.7 : 1
                     });
                   }

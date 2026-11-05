@@ -25,6 +25,8 @@ De luchtfoto van PDOK en Natura 2000-gebieden zijn beschikbaar via de laagkeuze;
 
 De route-lijst toont de afstand in hele kilometers achter de routenaam. De route-pop-up toont de berekende afstand in kilometers en links naar de oorspronkelijke GPS-bestanden en routepagina's. Een groene stip markeert het startpunt van de geselecteerde route. De routes worden vereenvoudigd voor een vlotte weergave; de afstand is daarop gebaseerd.
 
+Alle routes gebruiken dezelfde kleur als de regio Akersloot. De kleur van een geselecteerde route verandert tijdelijk om die route uit te lichten.
+
 Op mobiel kun je het routepaneel vanaf de handgreep omhoog slepen en na het kiezen van een route weer omlaag schuiven. Met de knop rechtsboven open je de kaart schermvullend. De routes hebben een bredere, onzichtbare klikzone zodat selecteren op touchscreens makkelijker is.
 
 ## Een route delen
